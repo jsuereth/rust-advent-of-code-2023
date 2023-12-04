@@ -44,22 +44,45 @@ fn game_results(input: &str) -> IResult<&str, (u32, Vec<ColorResult>)> {
 }
 
 
+// Part 1 Solution
 fn possible_game_sums(input: &str) -> u32 {
     input.lines().map(|line| {
-        let (rest, result) = game_results(line).unwrap();
+        let (_, result) = game_results(line).unwrap();
         return result;
     })
-    .filter(|(id, results)| results.iter().all(|result| result.red <= 12 && result.green <= 13 && result.blue <= 14))
+    .filter(|(_, results)| results.iter().all(|result| result.red <= 12 && result.green <= 13 && result.blue <= 14))
     .map(|(id, _)| id)
     .sum()
 }
 
+// Part 2 Solutions
+fn min_cubes_required(results: &Vec<ColorResult>) -> ColorResult {
+    ColorResult {
+        red: results.iter().map(|r| r.red).max().unwrap_or(0),
+        green: results.iter().map(|r| r.green).max().unwrap_or(0),
+        blue: results.iter().map(|r| r.blue).max().unwrap_or(0),
+    }
+}
+
+fn game_power(input: &str) -> IResult<&str, u32> {
+    map(
+        map(game_results, |(id, result)| min_cubes_required(&result)),
+        |result| result.red*result.green*result.blue
+    )(input)
+}
+
+fn total_game_sum(input: &str) -> u32 {
+    input.lines().map(|line| {
+        let (_, result) = game_power(line).unwrap();
+        return result;
+    }).sum()
+}
 
 fn main() {
     let results = 
       fs::read_to_string("results.txt")
       .expect("Calibration file needs to exist.");
-    let sum = possible_game_sums(&results);
+    let sum = total_game_sum(&results);
     println!("Game sum = {sum}")
 }
 
@@ -93,6 +116,23 @@ mod tests {
         assert_eq!(game_results("Game 10: 3 blue, 2 red; 1 green"), Ok(("", (10, vec!(ColorResult { red:2,blue:3,green:0}, ColorResult{green:1,red:0,blue:0})))));
     }
 
+    // Part 2 tests
+    #[test]
+    fn test_min_cubes_required() {
+        let (_, (_, tosses)) = game_results("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green").unwrap();
+        assert_eq!(min_cubes_required(&tosses), ColorResult { red: 4, green:2, blue:6 });
+    }
+
+    #[test]
+    fn test_total_game_sums() {
+        assert_eq!(total_game_sum("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green\n\
+        Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue\n\
+        Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red\n\
+        Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red\n\
+        Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"), 2286);
+    }
+
+    // Part 1 tests
     #[test]
     fn test_possible_game_sums() {
         assert_eq!(possible_game_sums("Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green\n\
