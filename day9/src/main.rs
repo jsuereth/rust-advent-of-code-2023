@@ -30,15 +30,18 @@ fn part1_solution(seq: Vec<Vec<i64>>) -> i64 {
 }
 
 // TODO - parse input file.
+fn parse_input(input: &str) -> Vec<Vec<i64>> {
+    input.lines()
+    .map(|line| line.split_whitespace().map(|s| s.parse().unwrap()).collect())
+    .collect()
+}
 
 
 fn main() {
-    let solution = part1_solution(
-        vec!(
-         vec!(0, 3, 6, 9, 12, 15),
-         vec!(1, 3, 6, 10, 15, 21),
-         vec!(10, 13, 16, 21, 30, 45),
-        )); 
+    let input =
+      std::fs::read_to_string("input.txt")
+      .expect("Must find solution input!");
+    let solution = part1_solution(parse_input(&input)); 
     println!("Part 1 solution: {solution}")
 }
 
