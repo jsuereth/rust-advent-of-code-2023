@@ -118,7 +118,7 @@ fn solve(nodes: Vec<Node>) -> i64 {
         cur_nodes.append(&mut next_nodes);
     }
 
-    cur_iteration
+    cur_iteration-1
 }
 
 
@@ -159,5 +159,28 @@ mod tests {
         // Not sure the value of these tests.
         assert_eq!(Node::new(initial, '|').connections(), vec!(initial.north(), initial.south()));
         assert_eq!(Node::new(initial, 'F').connections(), vec!(initial.south(), initial.east()));
+    }
+
+    #[test]
+    fn test_solution() {
+        assert_eq!(solve(parse_input(
+            "..F7.\n\
+             .FJ|.\n\
+             SJ.L7\n\
+             |F--J\n\
+             LJ...")), 8);
+        assert_eq!(solve(parse_input(
+                ".....\n\
+                .S-7.\n\
+                .|.|.\n\
+                .L-J.\n\
+                .....")), 4);
+        // Complicated version with extraneous pipes
+        assert_eq!(solve(parse_input(
+            "-L|F7\n\
+             7S-7|\n\
+             L|7||\n\
+             -L-J|\n\
+             L|-JF")), 4);
     }
 }
