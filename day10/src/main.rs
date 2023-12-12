@@ -74,13 +74,35 @@ impl Node {
 
 
 fn solve(nodes: Vec<Node>) -> i64 {
+    let mut nodemap = HashMap::new();
+    for n in &nodes {
+        nodemap.insert(n.id, n);
+    }
+
     // Put all edges into a data structure (Location -> Set<Location>)
     let mut edges = HashMap::new();
     for n in &nodes {
         for c in n.connections() {
             // Write edges from n->n2 and n2->n
-            edges.entry(n.id).or_insert(HashSet::new()).insert(c);
-            edges.entry(c).or_insert(HashSet::new()).insert(n.id);
+            // However - we need to reject INVALID edges, because of faulty pipes. 
+            let Some(n2) = nodemap.get(&c) else { continue };
+            match n2.name {
+                'S' => {
+                    // TODO - can we just create any edges to starting node?
+                    edges.entry(n.id).or_insert(HashSet::new()).insert(c);
+                    edges.entry(c).or_insert(HashSet::new()).insert(n.id);
+                },
+                '.' => {
+                    // Ignore ground spaces, no pipes connect.
+                },
+                _ => {
+                    // Check the other side first.
+                    if n2.connections().contains(&n.id) {
+                        edges.entry(n.id).or_insert(HashSet::new()).insert(c);
+                    edges.entry(c).or_insert(HashSet::new()).insert(n.id);
+                    }
+                },
+            }
         }
     }
     let Some(start) = nodes.iter().find(|n| n.name =='S') else { panic!("Could not find starting position S!") };
